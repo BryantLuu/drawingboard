@@ -141,9 +141,29 @@
     signal.color = color.val();
     signal.range = range.val();
     socket.emit('onMouseDown', signal);
+
+    if (signal.currentMode == 'drawing'){
+      path = new Path();
+      path.strokeCap = 'round';
+      path.strokeJoin = 'round';
+      path.strokeColor = '#'+signal.color;
+      path.strokeWidth = signal.range;
+      path.add(signal.point);
+    } else {
+
+      path = new Path();
+      path.strokeCap = 'round';
+      path.strokeJoin = 'round';
+      path.strokeColor = '#FFFFFF';
+      path.strokeWidth = signal.range;
+      path.add(signal.point);
+    }
+
   }
 
   function onMouseDrag(event) {
+    var point = {x:event[1], y:event[2]};
+    path.add(event.point);
     socket.emit('onMouseDrag', event.point);
   }
   function serialize(canvas) {
@@ -186,6 +206,8 @@
   })
 
   $('#clear').click(function(){
+    project.clear();
+    paper.view.update();
     socket.emit('clear');
   })
 

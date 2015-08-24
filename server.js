@@ -28,17 +28,18 @@ io.sockets.on('connection', function (socket){
   console.log(socket.id, "has connected");
 
   socket.on('onMouseDown', function (eventpoint){
-    io.to(socket.room).emit('OtherOnMouseDown', eventpoint)
+    socket.to(socket.room).broadcast.emit('OtherOnMouseDown', eventpoint)
   })
 
   socket.on('onMouseDrag', function (eventpoint){
-    io.to(socket.room).emit('OtherOnMouseDrag', eventpoint)
+    socket.to(socket.room).broadcast.emit('OtherOnMouseDrag', eventpoint)
   })
 
   socket.on('clear', function(){
-    io.to(socket.room).emit('clear');
+    socket.to(socket.room).broadcast.emit('clear');
   })
 
+// Socket joins room and gets previous drawing
   socket.on('need_drawing', function (room){
     socket.room = room.room;
     socket.join(room.room);
