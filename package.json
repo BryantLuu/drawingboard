@@ -1,0 +1,9 @@
+{
+  "name": "bring_itV2",
+  "version": "0.0.1",
+  "dependencies": {
+    "ejs": "^2.3.3",
+    "express": "~4.2.0",
+    "socket.io": "^1.3.6"
+  }
+}
