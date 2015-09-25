@@ -13,19 +13,33 @@
 <script type="text/javascript" src="../jscolor/jscolor.js"></script>
 <!-- Define inlined PaperScript associate it with myCanvas -->
 <style type="text/css">
-  #messages{
+  ul {
+    list-style-type: circle;
+    list-style-position: inside;
+    padding-left:0px;
+  }
+  
+  #messages {
     border: 1px solid silver;
     padding: 10px;
     width:100%;
-    height:388px;
+    height:188px;
     overflow-y: scroll;
   }
 
-  .tools{
+  #users {
+    border: 1px solid silver;
+    padding: 10px;
+    width:100%;
+    height:188px;
+    overflow-y: scroll;
+  }
+
+  .tools {
     margin-top:10px;
   }
 
-  #myCanvas{
+  #myCanvas {
     width:100%; 
     height:100%;
     border-style: 1px solid;
@@ -37,7 +51,7 @@
     cursor: url(/img/pen.png), auto;
   }
 
-  .inline{
+  .inline {
     display:inline-block;
   }
 </style>
@@ -54,17 +68,20 @@
 
 
 <div class="container">
-  <div class='col-md-12'>
-    <h1>Drawing Board</h1>
-  </div>
   <div id='canvas' class='col-md-9'>
+    <h1>Drawing Board</h1>
     <canvas id="myCanvas"></canvas>
   </div>
   <div class='col-md-3' id='chatroom'>
+    <h1>Chat</h1>
     <div id='messages'></div>
     <form id='send'>
       <input id='message' class='form-control' autocomplete="off">
     </form>
+  </div>
+  <div class='col-md-3'>
+    <h4>Users</h4>
+    <div id='users'></div>
   </div>
   <div class="tools col-md-12">
     <img class='inline' id='brush' src='/img/pen.png'>
@@ -72,8 +89,8 @@
     <img class='inline' id='eraser' src='/img/cursor-eraser.png'>
     <input type="button" id="clear" value="Clear">
     <p>Brush Size:<input class='inline' id='range' type="range" min="5" max="50" step="5" value='5' style="width:50px"></p>
-    
   </div>
+  
   
 <div class="modal fade" id='myModal'>
   <div class="modal-dialog">
@@ -101,8 +118,6 @@
 </script>
 <script type="text/paperscript" canvas="myCanvas">
 
-
-
   var socket = io.connect();
   var color = $('#color').val('000000');
   var canvas = document.getElementById('myCanvas');
@@ -111,7 +126,7 @@
 
   $('#close_modal').click(function(){
     var name = $('#name').val();
-    socket.emit('user_joined', {name: name});
+    socket.emit('user_joined', {name: name, room: window.location.pathname});
   })
   // chatting
 
@@ -121,12 +136,27 @@
     return false;
   })
 
-  socket.on("sent_message", function(data){
+  socket.on("sent_message", function (data){
     $('#messages').append($('<p>').text(data.message));
     var elem = document.getElementById('messages'); // = $('#history')
     elem.scrollTop = elem.scrollHeight;
     $('.chatbox').scrollTop = $('.chatbox').scrollHeight; 
   });
+
+  socket.on('update_user_list', function (data){
+    var users_list = "<ul>"
+    for (var i = 0; i < data.length; i++){
+      users_list += '<li>' + data[i] + '</li>';
+    }
+    users_list += '</ul>';
+    $("#users").html(users_list);
+
+    var elem = document.getElementById('users'); // = $('#history')
+    elem.scrollTop = elem.scrollHeight;
+    $('.chatbox').scrollTop = $('.chatbox').scrollHeight; 
+  })
+
+
 
 
   // drawing

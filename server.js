@@ -24,6 +24,8 @@ var server = app.listen(app.get('port'), function() {
 
 var io = require('socket.io').listen(server);
 
+var users = {};
+
 io.sockets.on('connection', function (socket){
   console.log(socket.id, "has connected");
 
@@ -41,10 +43,7 @@ io.sockets.on('connection', function (socket){
 
 // Socket joins room and gets previous drawing
   socket.on('need_drawing', function (room){
-    socket.room = room.room;
-    socket.join(room.room);
-    // console.log(room);
-    socket.to(socket.room).broadcast.emit('get_drawing');
+    
   })
 
   socket.on('return_drawing', function (data){
@@ -52,14 +51,36 @@ io.sockets.on('connection', function (socket){
   })
 
   socket.on('user_joined', function (data){
+    socket.room = data.room;
+    socket.join(data.room);
+
+    socket.to(socket.room).broadcast.emit('get_drawing');
     socket.name = data.name;
+
+    if (!users[data.room]){
+      users[data.room] = [socket.name];
+    } else {
+      users[data.room].push(socket.name);
+    }
+    console.log(data);
+    io.to(data.room).emit('update_user_list', users[data.room])
   })
 
   socket.on('send_message', function (data){
     var string = "";
     string += socket.name + ": " + data.message;
     io.to(socket.room).emit("sent_message", {message:string});
-    // io.to(user_list[socket.id].room).emit("sent_message", {message:string})
+  })
 
+  socket.on("disconnect", function (data){
+    if(users[socket.room]){
+      for (var i = 0; i < users[socket.room].length; i++){
+        if (users[socket.room][i] == socket.name){
+          users[socket.room].splice(i,1)
+          break;
+        }
+      }  
+    }
+    io.to(socket.room).emit('update_user_list', users[socket.room])
   })
 })
